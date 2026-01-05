@@ -285,17 +285,9 @@ export class LocalAIProvider implements AIProvider {
   }
 }
 
-// Factory function to create AI provider
+// Factory function to create AI provider (kept for backward compatibility)
 export function createAIProvider(): AIProvider {
-  // Check environment variables for available providers
-  if (process.env.OPENAI_API_KEY) {
-    return new OpenAIProvider(process.env.OPENAI_API_KEY)
-  }
-  
-  if (process.env.HUGGINGFACE_API_KEY) {
-    return new HuggingFaceProvider(process.env.HUGGINGFACE_API_KEY)
-  }
-  
-  // Default to local processing (always free)
-  return new LocalAIProvider()
+  // Import the smart provider for fallback system
+  const { createSmartAIProvider } = require('./ai-providers-enhanced')
+  return createSmartAIProvider()
 }
