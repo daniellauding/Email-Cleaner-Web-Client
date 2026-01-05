@@ -65,30 +65,30 @@ export default function DashboardPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      setLoadingStep('Connecting to Gmail...')
-      await new Promise(resolve => setTimeout(resolve, 500))
+      setLoadingStep('🔐 Connecting to Gmail... (10-15 seconds)')
+      await new Promise(resolve => setTimeout(resolve, 800))
       
-      setLoadingStep('Analyzing your emails...')
+      setLoadingStep('📧 Analyzing your emails... (this may take 20-30 seconds)')
       const [statsRes, recentEmailsRes, newslettersRes] = await Promise.all([
         fetch('/api/gmail/stats'),
         fetch('/api/gmail/emails?maxResults=50'), // Recent emails
         fetch('/api/gmail/newsletters?daysOld=30') // Old newsletters
       ])
       
-      setLoadingStep('Processing newsletters...')
+      setLoadingStep('🤖 Processing with AI insights... (5-10 seconds)')
       const statsData = await statsRes.json()
       const recentEmailsData = await recentEmailsRes.json()
       const newslettersData = await newslettersRes.json()
       
-      setLoadingStep('Almost done...')
-      await new Promise(resolve => setTimeout(resolve, 300))
+      setLoadingStep('✨ Finalizing dashboard... (almost done!)')
+      await new Promise(resolve => setTimeout(resolve, 500))
       
       setStats(statsData)
       setAllEmails(recentEmailsData.messages || [])
       setNewsletters(newslettersData)
     } catch (error) {
       console.error('Error fetching data:', error)
-      setLoadingStep('Error loading data. Please try again.')
+      setLoadingStep('❌ Error loading data. Please refresh and try again.')
     } finally {
       setLoading(false)
     }
@@ -226,25 +226,66 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Preview Insights */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4 opacity-60">
+          {/* What's Coming Next */}
+          <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4 opacity-70">
             <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
               <Zap className="w-4 h-4 text-yellow-600" />
-              AI Insights Preview
+              Your personalized insights will include...
             </h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2 animate-pulse">
-                <div className="w-2 h-2 bg-green-500 rounded-full" />
-                <span className="text-gray-600">Analyzing newsletter subscriptions...</span>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs font-bold text-red-600">📩</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-800">Unanswered Emails</p>
+                  <p className="text-gray-600">Important emails waiting for your response</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2 animate-pulse" style={{animationDelay: '0.5s'}}>
-                <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                <span className="text-gray-600">Detecting unread email patterns...</span>
+              
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs font-bold text-green-600">👥</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-800">Top Contacts</p>
+                  <p className="text-gray-600">People you email most + last contact dates</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2 animate-pulse" style={{animationDelay: '1s'}}>
-                <div className="w-2 h-2 bg-purple-500 rounded-full" />
-                <span className="text-gray-600">Finding cleanup opportunities...</span>
+              
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs font-bold text-blue-600">📎</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-800">Attachments & Follow-ups</p>
+                  <p className="text-gray-600">Important files and emails needing follow-up</p>
+                </div>
               </div>
+              
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs font-bold text-purple-600">⏰</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-800">Productivity Patterns</p>
+                  <p className="text-gray-600">Best times to email, response rates, habits</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Loading Tips */}
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border p-4 mb-4 opacity-60">
+            <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+              💡 Productivity Features Loading...
+            </h4>
+            <div className="text-sm space-y-1">
+              <p className="text-gray-700">• 🔍 Find emails waiting for replies automatically</p>
+              <p className="text-gray-700">• 👥 See who you communicate with most often</p>
+              <p className="text-gray-700">• 📎 Discover emails with important attachments</p>
+              <p className="text-gray-700">• ⏰ Get insights on your email response patterns</p>
+              <p className="text-gray-700">• 🔒 All analysis happens privately on your device</p>
             </div>
           </div>
 
@@ -268,18 +309,67 @@ export default function DashboardPage() {
           {/* Progress Indicators */}
           <div className="fixed bottom-6 left-4 right-4 max-w-sm mx-auto">
             <div className="bg-white rounded-lg border shadow-lg p-4">
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-2 h-2 bg-primary-600 rounded-full animate-pulse" />
-                  <span className="text-gray-700">Secure Gmail connection</span>
+              {/* Estimated Time */}
+              <div className="text-center mb-3">
+                <p className="text-sm font-medium text-gray-900">Estimated time: 30-45 seconds</p>
+                <p className="text-xs text-gray-500">We're analyzing your email patterns</p>
+              </div>
+              
+              {/* Progress Bar */}
+              <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                <div 
+                  className="bg-primary-600 h-2 rounded-full transition-all duration-1000"
+                  style={{
+                    width: loadingStep.includes('Connecting') ? '25%' :
+                           loadingStep.includes('Analyzing') ? '50%' :
+                           loadingStep.includes('Processing') ? '75%' :
+                           loadingStep.includes('Finalizing') ? '90%' : '10%'
+                  }}
+                />
+              </div>
+              
+              {/* Status Steps */}
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${
+                      loadingStep.includes('Connecting') || loadingStep.includes('Analyzing') || 
+                      loadingStep.includes('Processing') || loadingStep.includes('Finalizing') 
+                        ? 'bg-green-500' : 'bg-primary-600 animate-pulse'
+                    }`} />
+                    <span className="text-gray-700">Secure Gmail connection</span>
+                  </div>
+                  {(loadingStep.includes('Analyzing') || loadingStep.includes('Processing') || loadingStep.includes('Finalizing')) && 
+                    <span className="text-green-600 text-xs">✓</span>
+                  }
                 </div>
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-2 h-2 bg-primary-400 rounded-full animate-pulse" style={{animationDelay: '0.5s'}} />
-                  <span className="text-gray-700">AI-powered analysis</span>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${
+                      loadingStep.includes('Analyzing') || loadingStep.includes('Processing') || loadingStep.includes('Finalizing')
+                        ? 'bg-green-500' : loadingStep.includes('Connecting') 
+                        ? 'bg-primary-400 animate-pulse' : 'bg-gray-300'
+                    }`} />
+                    <span className="text-gray-700">AI-powered analysis</span>
+                  </div>
+                  {(loadingStep.includes('Processing') || loadingStep.includes('Finalizing')) && 
+                    <span className="text-green-600 text-xs">✓</span>
+                  }
                 </div>
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-2 h-2 bg-primary-300 rounded-full animate-pulse" style={{animationDelay: '1s'}} />
-                  <span className="text-gray-700">Privacy-first approach</span>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${
+                      loadingStep.includes('Finalizing') 
+                        ? 'bg-green-500' : loadingStep.includes('Processing')
+                        ? 'bg-primary-300 animate-pulse' : 'bg-gray-300'
+                    }`} />
+                    <span className="text-gray-700">Dashboard ready</span>
+                  </div>
+                  {loadingStep.includes('Finalizing') && 
+                    <span className="text-green-600 text-xs">✓</span>
+                  }
                 </div>
               </div>
             </div>
