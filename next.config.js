@@ -7,7 +7,8 @@ const nextConfig = {
   },
   // For Netlify deployment
   output: process.env.NETLIFY ? 'standalone' : undefined,
-  trailingSlash: true,
+  // Remove trailingSlash to fix OAuth callback
+  trailingSlash: false,
 }
 
 module.exports = nextConfig

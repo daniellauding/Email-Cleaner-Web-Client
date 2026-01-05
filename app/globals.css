@@ -35,4 +35,8 @@
   .card {
     @apply bg-white rounded-lg border shadow-sm p-4;
   }
+  
+  .border-3 {
+    border-width: 3px;
+  }
 }

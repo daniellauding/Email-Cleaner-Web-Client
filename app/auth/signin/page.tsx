@@ -72,7 +72,10 @@ export default function SignInPage() {
             className="w-full bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 py-3 px-6 rounded-lg font-medium flex items-center justify-center gap-3 transition-colors disabled:opacity-50"
           >
             {isLoading ? (
-              <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+              <>
+                <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                <span>Connecting...</span>
+              </>
             ) : (
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -93,7 +96,7 @@ export default function SignInPage() {
                 />
               </svg>
             )}
-            {isLoading ? 'Connecting...' : 'Continue with Google'}
+            {!isLoading && 'Continue with Google'}
           </button>
 
           <p className="text-xs text-gray-500 text-center mt-4">

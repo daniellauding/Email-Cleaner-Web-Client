@@ -42,6 +42,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<EmailStats | null>(null)
   const [newsletters, setNewsletters] = useState<EmailMessage[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingStep, setLoadingStep] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set())
 
@@ -60,18 +61,27 @@ export default function DashboardPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
+      setLoadingStep('Connecting to Gmail...')
+      await new Promise(resolve => setTimeout(resolve, 500)) // Small delay for UX
+      
+      setLoadingStep('Analyzing your emails...')
       const [statsRes, newslettersRes] = await Promise.all([
         fetch('/api/gmail/stats'),
         fetch('/api/gmail/newsletters?daysOld=30')
       ])
       
+      setLoadingStep('Processing newsletters...')
       const statsData = await statsRes.json()
       const newslettersData = await newslettersRes.json()
+      
+      setLoadingStep('Almost done...')
+      await new Promise(resolve => setTimeout(resolve, 300))
       
       setStats(statsData)
       setNewsletters(newslettersData)
     } catch (error) {
       console.error('Error fetching data:', error)
+      setLoadingStep('Error loading data. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -103,7 +113,38 @@ export default function DashboardPage() {
   if (status === 'loading' || loading) {
     return (
       <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+        <div className="text-center max-w-sm mx-auto px-4">
+          <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Mail className="w-8 h-8 text-white animate-pulse" />
+          </div>
+          
+          <div className="relative mb-6">
+            <div className="w-12 h-12 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto" />
+          </div>
+          
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            {status === 'loading' ? 'Signing you in...' : 'Setting up your dashboard'}
+          </h2>
+          
+          <p className="text-gray-600 mb-4">
+            {loadingStep || 'Preparing your email analysis...'}
+          </p>
+          
+          <div className="space-y-2 text-sm text-gray-500">
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-2 h-2 bg-primary-600 rounded-full animate-pulse" />
+              <span>Secure Gmail connection</span>
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-2 h-2 bg-primary-400 rounded-full animate-pulse" style={{animationDelay: '0.5s'}} />
+              <span>AI-powered analysis</span>
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-2 h-2 bg-primary-300 rounded-full animate-pulse" style={{animationDelay: '1s'}} />
+              <span>Privacy-first approach</span>
+            </div>
+          </div>
+        </div>
       </main>
     )
   }
