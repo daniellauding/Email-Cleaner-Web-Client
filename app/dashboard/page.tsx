@@ -49,6 +49,9 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set())
   const [currentView, setCurrentView] = useState<EmailView>('recent')
+  const [selectedEmail, setSelectedEmail] = useState<EmailMessage | null>(null)
+  const [emailBody, setEmailBody] = useState<string>('')
+  const [loadingEmailBody, setLoadingEmailBody] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -121,6 +124,28 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Error fetching emails:', error)
     }
+  }
+
+  const openEmail = async (email: EmailMessage) => {
+    setSelectedEmail(email)
+    setLoadingEmailBody(true)
+    setEmailBody('')
+    
+    try {
+      const response = await fetch(`/api/gmail/emails/${email.id}`)
+      const data = await response.json()
+      setEmailBody(data.body || 'Email body not available')
+    } catch (error) {
+      console.error('Error fetching email body:', error)
+      setEmailBody('Error loading email content')
+    } finally {
+      setLoadingEmailBody(false)
+    }
+  }
+
+  const closeEmail = () => {
+    setSelectedEmail(null)
+    setEmailBody('')
   }
 
   const handleSelectAll = () => {
@@ -442,6 +467,51 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* AI Insights Section */}
+        {stats && (
+          <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200 p-4 mb-6">
+            <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Zap className="w-5 h-5 text-yellow-500" />
+              AI Insights & Recommendations
+            </h3>
+            <div className="grid gap-3">
+              {stats.unreadEmails > 100 && (
+                <div className="bg-white rounded-lg p-3 border border-orange-200">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-orange-500">⚠️</span>
+                    <span className="font-medium text-gray-900">High Unread Count</span>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    You have {stats.unreadEmails} unread emails. Consider bulk cleanup or auto-archiving.
+                  </p>
+                </div>
+              )}
+              
+              {stats.newsletters > 50 && (
+                <div className="bg-white rounded-lg p-3 border border-blue-200">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-blue-500">📰</span>
+                    <span className="font-medium text-gray-900">Newsletter Cleanup Opportunity</span>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {stats.newsletters} newsletters found. Unsubscribe from unused ones to reduce clutter.
+                  </p>
+                </div>
+              )}
+              
+              <div className="bg-white rounded-lg p-3 border border-green-200">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-green-500">💡</span>
+                  <span className="font-medium text-gray-900">Productivity Tip</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Set up email filters to automatically sort newsletters and notifications.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Search and Actions */}
         <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
           <div className="flex items-center gap-2 mb-4">
@@ -516,6 +586,7 @@ export default function DashboardPage() {
               email={email}
               selected={selectedEmails.has(email.id)}
               onSelect={() => handleSelectEmail(email.id)}
+              onOpen={() => openEmail(email)}
               showUnsubscribe={currentView === 'newsletters'}
             />
           ))}
@@ -528,6 +599,63 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+        
+        {/* Email Reading Modal */}
+        {selectedEmail && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] flex flex-col">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-4 border-b">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-semibold text-gray-900 truncate">
+                    {selectedEmail.subject}
+                  </h3>
+                  <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                    <span className="truncate">{selectedEmail.from}</span>
+                    <span className="whitespace-nowrap">
+                      {new Date(selectedEmail.date).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={closeEmail}
+                  className="ml-4 p-2 text-gray-400 hover:text-gray-600 rounded-lg"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              {/* Modal Body */}
+              <div className="flex-1 overflow-y-auto p-4">
+                {loadingEmailBody ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : (
+                  <div 
+                    className="prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: emailBody }}
+                  />
+                )}
+              </div>
+              
+              {/* Modal Footer */}
+              <div className="border-t p-4 flex gap-2 justify-end">
+                <button className="btn-secondary text-sm">
+                  Mark as Read
+                </button>
+                <button className="btn-secondary text-sm">
+                  Reply
+                </button>
+                {selectedEmail.isNewsletter && (
+                  <button className="btn-danger text-sm">
+                    Unsubscribe
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   )
@@ -579,18 +707,26 @@ function EmailCard({
   email, 
   selected, 
   onSelect,
+  onOpen,
   showUnsubscribe = false
 }: { 
   email: EmailMessage
   selected: boolean
   onSelect: () => void
+  onOpen: () => void
   showUnsubscribe?: boolean
 }) {
+  const [showFullDate, setShowFullDate] = useState(false)
+  
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
     const now = new Date()
     const diffTime = Math.abs(now.getTime() - date.getTime())
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    
+    if (showFullDate) {
+      return date.toLocaleString()
+    }
     
     if (diffDays === 1) return 'Today'
     if (diffDays === 2) return 'Yesterday'
@@ -598,15 +734,27 @@ function EmailCard({
     return date.toLocaleDateString()
   }
 
+  const handleEmailClick = (e: React.MouseEvent) => {
+    // Don't open email if clicking checkbox or buttons
+    if ((e.target as HTMLElement).closest('input, button')) {
+      return
+    }
+    onOpen()
+  }
+
   return (
-    <div className={`bg-white rounded-lg border border-gray-200 p-4 transition-all hover:shadow-sm ${
-      email.unread ? 'border-l-4 border-l-primary-500' : ''
-    }`}>
+    <div 
+      className={`bg-white rounded-lg border border-gray-200 p-4 transition-all hover:shadow-md cursor-pointer ${
+        email.unread ? 'border-l-4 border-l-primary-500' : ''
+      }`}
+      onClick={handleEmailClick}
+    >
       <div className="flex items-start gap-3">
         <input
           type="checkbox"
           checked={selected}
           onChange={onSelect}
+          onClick={(e) => e.stopPropagation()}
           className="w-4 h-4 text-primary-600 border-gray-300 rounded mt-1"
         />
         <div className="flex-1 min-w-0">
@@ -630,17 +778,38 @@ function EmailCard({
               <p className="text-sm text-gray-600 truncate">
                 {email.from}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <button 
+                className="text-xs text-gray-500 mt-1 hover:text-gray-700 text-left"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowFullDate(!showFullDate)
+                }}
+              >
                 {formatDate(email.date)}
-              </p>
+              </button>
             </div>
             <div className="flex items-center gap-1">
+              <button 
+                className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded hover:bg-blue-200"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onOpen()
+                }}
+              >
+                Read
+              </button>
               {showUnsubscribe && email.unsubscribeLink && (
-                <button className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200">
+                <button 
+                  className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   Unsubscribe
                 </button>
               )}
-              <button className="p-1 text-gray-400 hover:text-gray-600">
+              <button 
+                className="p-1 text-gray-400 hover:text-gray-600"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <MoreVertical className="w-4 h-4" />
               </button>
             </div>
