@@ -1,0 +1,235 @@
+{
+  "project": {
+    "name": "Email Cleaner",
+    "version": "1.0.0",
+    "status": "functional",
+    "lastUpdated": "2026-01-06",
+    "environment": "development",
+    "port": 3000,
+    "framework": "Next.js 14.2.3"
+  },
+  "features": {
+    "authentication": {
+      "provider": "NextAuth with Google OAuth",
+      "tokenRefresh": true,
+      "sessionManagement": true,
+      "status": "✅ Working"
+    },
+    "emailManagement": {
+      "fetch": true,
+      "search": true,
+      "filter": true,
+      "markAsRead": true,
+      "archive": true,
+      "trash": true,
+      "delete": true,
+      "forward": true,
+      "reply": true,
+      "status": "✅ Working"
+    },
+    "categorization": {
+      "newsletters": {
+        "detection": true,
+        "categories": ["Tech & Development", "Business & Marketing", "News & Updates"],
+        "count": 100
+      },
+      "smartLabels": {
+        "meetings": true,
+        "financial": true,
+        "actionRequired": true,
+        "followUp": true,
+        "clientCustomer": true
+      },
+      "status": "✅ Working"
+    },
+    "ai": {
+      "providers": ["Google Gemini", "HuggingFace", "Local"],
+      "emailAssistant": true,
+      "quickQueries": [
+        "What's urgent?",
+        "Newsletter summary",
+        "Find todos",
+        "Reply priority"
+      ],
+      "smartSuggestions": true,
+      "status": "✅ Working"
+    },
+    "calendar": {
+      "meetingDetection": true,
+      "platforms": ["Zoom", "Teams", "Google Meet", "Calendar"],
+      "upcomingTracking": true,
+      "inviteManagement": true,
+      "status": "✅ Working"
+    },
+    "ui": {
+      "focusModes": ["all", "unread", "important", "today", "personal"],
+      "displayModes": ["names", "emails", "smart"],
+      "expandableCategories": true,
+      "emailPreviewModal": true,
+      "reportModal": true,
+      "aiAssistantModal": true,
+      "forwardModal": true,
+      "mobileResponsive": true,
+      "status": "✅ Working"
+    }
+  },
+  "statistics": {
+    "currentUser": {
+      "totalEmails": 201,
+      "unreadEmails": 201,
+      "newsletters": 100,
+      "meetings": 5,
+      "unreadRate": "100%",
+      "dailyAverage": 7
+    },
+    "performance": {
+      "emailFetchTime": "10-15s",
+      "newsletterAnalysis": "20-25s",
+      "statsCalculation": "40-45s",
+      "tokenRefreshTime": "automatic"
+    }
+  },
+  "apiEndpoints": {
+    "auth": {
+      "signin": "/api/auth/signin",
+      "callback": "/api/auth/callback/google",
+      "session": "/api/auth/session",
+      "signout": "/api/auth/signout"
+    },
+    "gmail": {
+      "emails": "/api/gmail/emails",
+      "emailById": "/api/gmail/emails/[id]",
+      "markRead": "/api/gmail/emails/mark-read",
+      "remove": "/api/gmail/emails/remove",
+      "forward": "/api/gmail/emails/forward",
+      "stats": "/api/gmail/stats",
+      "newsletters": "/api/gmail/newsletters"
+    }
+  },
+  "components": {
+    "dashboard": {
+      "path": "/app/dashboard/page.tsx",
+      "lines": 1900,
+      "sections": [
+        "Header with user info and logout",
+        "Stats cards (clickable)",
+        "AI Insights & Recommendations",
+        "Smart Categories & Summaries",
+        "Smart Labels & Calendar",
+        "AI Assistant & Focus Mode",
+        "Search and Actions",
+        "Email List with bulk operations",
+        "Email Reading Modal",
+        "Forward Email Modal",
+        "Email Report Modal",
+        "AI Assistant Modal"
+      ]
+    },
+    "services": {
+      "gmail": {
+        "path": "/lib/gmail.ts",
+        "methods": [
+          "getProfile",
+          "getEmails",
+          "searchNewsletters",
+          "getEmailStats",
+          "markAsRead",
+          "deleteEmails",
+          "trashEmails",
+          "archiveEmails",
+          "forwardEmail",
+          "getEmailBody"
+        ]
+      },
+      "auth": {
+        "path": "/lib/auth.ts",
+        "features": [
+          "Google OAuth provider",
+          "Token refresh mechanism",
+          "JWT callbacks",
+          "Session management"
+        ]
+      }
+    }
+  },
+  "dependencies": {
+    "core": {
+      "next": "14.2.3",
+      "react": "^18",
+      "typescript": "^5",
+      "tailwindcss": "^3.4.1"
+    },
+    "auth": {
+      "next-auth": "^4.24.7",
+      "@auth/prisma-adapter": "^1.5.0"
+    },
+    "gmail": {
+      "googleapis": "^134.0.0"
+    },
+    "ui": {
+      "lucide-react": "^0.344.0",
+      "tailwind-scrollbar-hide": "^1.1.7"
+    },
+    "database": {
+      "prisma": "^5.11.0",
+      "@prisma/client": "^5.11.0"
+    }
+  },
+  "configuration": {
+    "requiredEnvVars": [
+      "NEXTAUTH_URL",
+      "NEXTAUTH_SECRET",
+      "GOOGLE_CLIENT_ID",
+      "GOOGLE_CLIENT_SECRET"
+    ],
+    "optionalEnvVars": [
+      "GOOGLE_GEMINI_API_KEY",
+      "HUGGINGFACE_API_KEY",
+      "OPENAI_API_KEY",
+      "DATABASE_URL"
+    ],
+    "googleOAuthScopes": [
+      "openid",
+      "email",
+      "profile",
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/gmail.modify"
+    ]
+  },
+  "todoList": {
+    "completed": [
+      "Fix OAuth token refresh",
+      "Add error handling for 401 responses",
+      "Implement remove/delete email functionality",
+      "Implement forward email functionality",
+      "Add null checks for stats",
+      "Add newsletter categorization",
+      "Implement email labeling and filtering",
+      "Add focus mode functionality",
+      "Create AI email assistant",
+      "Add todo extraction from emails",
+      "Add smart label suggestions",
+      "Integrate calendar insights",
+      "Create bulk labeling UI"
+    ],
+    "pending": [
+      "Implement actual Gmail label creation via API",
+      "Add real unsubscribe functionality",
+      "Create Gmail filters programmatically",
+      "Add email compose functionality",
+      "Implement snooze feature",
+      "Add email templates",
+      "Implement scheduled sending",
+      "Add date range search",
+      "Create mobile app version",
+      "Build browser extension"
+    ]
+  },
+  "deployment": {
+    "platform": "Netlify",
+    "buildCommand": "npm run build",
+    "publishDirectory": ".next",
+    "environment": "Node.js 18.x",
+    "status": "Ready for deployment"
+  }
+}

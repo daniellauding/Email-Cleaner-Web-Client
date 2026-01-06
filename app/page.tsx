@@ -22,7 +22,10 @@ export default function HomePage() {
   if (status === 'loading') {
     return (
       <main className="flex-1 bg-gradient-to-br from-primary-50 to-blue-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
       </main>
     )
   }

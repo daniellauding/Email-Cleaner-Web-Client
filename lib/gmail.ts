@@ -183,6 +183,87 @@ export class GmailService {
     }
   }
 
+  async trashEmails(messageIds: string[]): Promise<void> {
+    try {
+      await this.gmail.users.messages.batchModify({
+        userId: 'me',
+        requestBody: {
+          ids: messageIds,
+          addLabelIds: ['TRASH']
+        }
+      })
+    } catch (error) {
+      console.error('Error moving emails to trash:', error)
+      throw error
+    }
+  }
+
+  async archiveEmails(messageIds: string[]): Promise<void> {
+    try {
+      await this.gmail.users.messages.batchModify({
+        userId: 'me',
+        requestBody: {
+          ids: messageIds,
+          removeLabelIds: ['INBOX']
+        }
+      })
+    } catch (error) {
+      console.error('Error archiving emails:', error)
+      throw error
+    }
+  }
+
+  async forwardEmail(messageId: string, to: string, message?: string): Promise<void> {
+    try {
+      // Get the original message
+      const originalResponse = await this.gmail.users.messages.get({
+        userId: 'me',
+        id: messageId,
+        format: 'full'
+      })
+
+      const original = originalResponse.data
+      const originalHeaders = original.payload?.headers || []
+      const originalSubject = originalHeaders.find(h => h.name?.toLowerCase() === 'subject')?.value || ''
+      const originalFrom = originalHeaders.find(h => h.name?.toLowerCase() === 'from')?.value || ''
+      const originalDate = originalHeaders.find(h => h.name?.toLowerCase() === 'date')?.value || ''
+      
+      // Create forward message
+      const subject = `Fwd: ${originalSubject}`
+      const forwardedMessage = `
+${message || ''}
+
+---------- Forwarded message ---------
+From: ${originalFrom}
+Date: ${originalDate}
+Subject: ${originalSubject}
+
+${await this.getEmailBody(messageId)}
+      `.trim()
+
+      // Create the email
+      const email = [
+        `To: ${to}`,
+        `Subject: ${subject}`,
+        'Content-Type: text/plain; charset=utf-8',
+        '',
+        forwardedMessage
+      ].join('\r\n')
+
+      const encodedEmail = Buffer.from(email).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+
+      await this.gmail.users.messages.send({
+        userId: 'me',
+        requestBody: {
+          raw: encodedEmail
+        }
+      })
+    } catch (error) {
+      console.error('Error forwarding email:', error)
+      throw error
+    }
+  }
+
   async getEmailBody(messageId: string): Promise<string> {
     try {
       const response = await this.gmail.users.messages.get({
