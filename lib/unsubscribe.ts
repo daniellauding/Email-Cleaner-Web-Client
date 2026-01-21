@@ -122,7 +122,7 @@ export class UnsubscribeDetector {
     }
 
     // Remove duplicates
-    const uniqueLinks = [...new Set(links)]
+    const uniqueLinks = Array.from(new Set(links))
     
     return {
       found: uniqueLinks.length > 0,

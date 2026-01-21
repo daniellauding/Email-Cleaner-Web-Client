@@ -83,8 +83,8 @@ export class GmailService {
           const from = headers.find(h => h.name?.toLowerCase() === 'from')?.value || ''
           const to = headers.find(h => h.name?.toLowerCase() === 'to')?.value || ''
           const date = headers.find(h => h.name?.toLowerCase() === 'date')?.value || ''
-          const listUnsubscribe = headers.find(h => h.name?.toLowerCase() === 'list-unsubscribe')?.value
-          const unsubscribe = headers.find(h => h.name?.toLowerCase() === 'unsubscribe')?.value
+          const listUnsubscribe = headers.find(h => h.name?.toLowerCase() === 'list-unsubscribe')?.value ?? undefined
+          const unsubscribe = headers.find(h => h.name?.toLowerCase() === 'unsubscribe')?.value ?? undefined
 
           const isNewsletter = this.detectNewsletter(subject, from, listUnsubscribe, unsubscribe)
           
@@ -110,7 +110,7 @@ export class GmailService {
 
       return {
         messages,
-        nextPageToken: listResponse.data.nextPageToken,
+        nextPageToken: listResponse.data.nextPageToken ?? undefined,
         resultSizeEstimate: listResponse.data.resultSizeEstimate || 0
       }
     } catch (error) {
