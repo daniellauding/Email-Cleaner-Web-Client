@@ -256,6 +256,41 @@ export default function DashboardPage() {
     }
   }
 
+  const handleUnsubscribe = async (messageIds: string[]) => {
+    if (messageIds.length === 0) return
+
+    setLoading(true)
+    setLoadingStep(`🔄 Unsubscribing from ${messageIds.length} newsletter(s)...`)
+
+    try {
+      const response = await fetch('/api/gmail/unsubscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ messageIds }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to unsubscribe')
+      }
+
+      const result = await response.json()
+
+      // Refresh the email list
+      await fetchEmailsByType(currentView)
+      setSelectedEmails(new Set())
+      setLoadingStep(`✅ Unsubscribed from ${result.processed || messageIds.length} newsletter(s)`)
+      setTimeout(() => setLoadingStep(''), 3000)
+    } catch (error) {
+      console.error('Error unsubscribing:', error)
+      setLoadingStep('❌ Error unsubscribing')
+      setTimeout(() => setLoadingStep(''), 3000)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleForwardEmail = async () => {
     if (!forwardTo || !forwardEmail.emailId) return
     
@@ -1450,11 +1485,17 @@ export default function DashboardPage() {
               {selectedEmails.size > 0 && (
                 <div className="flex gap-2 flex-wrap">
                   {currentView === 'newsletters' && (
-                    <button className="btn-danger text-xs py-1 px-2">
+                    <button
+                      onClick={() => handleUnsubscribe(Array.from(selectedEmails))}
+                      className="btn-danger text-xs py-1 px-2"
+                    >
                       Unsubscribe ({selectedEmails.size})
                     </button>
                   )}
-                  <button className="btn-secondary text-xs py-1 px-2">
+                  <button
+                    onClick={() => handleMarkAsRead(Array.from(selectedEmails))}
+                    className="btn-secondary text-xs py-1 px-2"
+                  >
                     Mark Read ({selectedEmails.size})
                   </button>
                   <button 
@@ -1554,6 +1595,7 @@ export default function DashboardPage() {
               onSelect={() => handleSelectEmail(email.id)}
               onOpen={() => openEmail(email)}
               onForward={(emailId) => setForwardEmail({ show: true, emailId })}
+              onUnsubscribe={(emailId) => handleUnsubscribe([emailId])}
               showUnsubscribe={currentView === 'newsletters'}
             />
           ))}
@@ -2179,19 +2221,21 @@ function StatsCard({
   )
 }
 
-function EmailCard({ 
-  email, 
-  selected, 
+function EmailCard({
+  email,
+  selected,
   onSelect,
   onOpen,
   onForward,
+  onUnsubscribe,
   showUnsubscribe = false
-}: { 
+}: {
   email: EmailMessage
   selected: boolean
   onSelect: () => void
   onOpen: () => void
   onForward: (emailId: string) => void
+  onUnsubscribe?: (emailId: string) => void
   showUnsubscribe?: boolean
 }) {
   const [showFullDate, setShowFullDate] = useState(false)
@@ -2285,10 +2329,13 @@ function EmailCard({
               >
                 Forward
               </button>
-              {showUnsubscribe && email.unsubscribeLink && (
-                <button 
+              {showUnsubscribe && email.unsubscribeLink && onUnsubscribe && (
+                <button
                   className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onUnsubscribe(email.id)
+                  }}
                 >
                   Unsubscribe
                 </button>
