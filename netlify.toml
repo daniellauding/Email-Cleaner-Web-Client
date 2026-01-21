@@ -9,6 +9,9 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  # Skip secrets scanning for example files, docs, and build cache
+  SECRETS_SCAN_OMIT_PATHS = ".env.local.example,README.md,PROJECT_SUMMARY.md,.next/cache/**"
+  SECRETS_SCAN_OMIT_KEYS = "NEXTAUTH_URL"
 
 # For Next.js on Netlify
 [context.production.environment]
